@@ -1,0 +1,47 @@
+.main-div{
+  margin-top: 100px !important;
+}
+.main-div, .num-div, .fun-div{
+    border: 1px solid rgb(180, 180, 180);
+    border-radius: 2.5%;
+  }
+  .calc-form button {
+    border: 1px solid rgb(173, 173, 173);
+    text-align: center;
+  }
+  .form-control{
+    border: none;
+    border-radius: 0;
+  }
+  input[type="text"]:disabled {
+    background: white;
+  }
+  .blur {
+    filter: blur(5px);
+    pointer-events: none;
+  }
+
+  .history {
+    border: 1px solid rgb(0, 0, 0);
+    background-color: rgba(255, 253, 253, 0.86);
+    border-radius: 25px;
+    position: fixed;
+    z-index: 999;
+    margin-left: 25%;
+    max-height: 270px;
+    overflow-y: scroll;
+  }
+  .history .btn{
+    border:none;
+    font-size: 1.1rem;  
+    font-weight: bolder;
+  }
+  @media (max-width: 700px) {
+    .p-1{
+      padding: 2px !important;
+    }
+    .history{
+      margin-left: 35%;
+    }
+  }
+  
