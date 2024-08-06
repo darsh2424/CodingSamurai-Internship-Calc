@@ -28,6 +28,7 @@
     position: fixed;
     z-index: 999;
     margin-left: 25%;
+    min-height: 100px;
     max-height: 270px;
     overflow-y: scroll;
   }
@@ -35,6 +36,11 @@
     border:none;
     font-size: 1.1rem;  
     font-weight: bolder;
+  }
+  #historyClose{
+    position: fixed;
+    z-index: 999;
+    right:20%;
   }
   @media (max-width: 700px) {
     .p-1{

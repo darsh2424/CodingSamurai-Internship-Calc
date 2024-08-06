@@ -11,7 +11,7 @@ const Index = () => {
   const [isNewNum, setIsNewNum] = useState(false);
   const [result, setResult] = useState(false);
   const [history, setHistory] = useState([]);
-  const [showHistory,setShowHistory]=useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const savedHistory = JSON.parse(localStorage.getItem('calcHistory')) || [];
@@ -19,28 +19,30 @@ const Index = () => {
   }, []);
 
   const numberClick = (c) => {
-    if (isNewNum) {
+    if (textCalc.includes('.') && c === '.') return;
+
+    if (isNewNum || result) {
       changeTextCalc(c);
       setIsNewNum(false);
+      setResult(false);
     } else {
-      if (result) {
-        changeTextCalc(c);
-        setResult(false);
-        changeUpText(null);
-      } else {
-        changeTextCalc(textCalc === '0' ? c : textCalc + c);
-      }
+      changeTextCalc(textCalc === '0' ? c : textCalc + c);
     }
   };
 
   const oprClick = (c) => {
-      setFirstOperand(parseFloat(textCalc));
-      setOp(c);
-      changeUpText(textCalc + ' ' + c + ' ');
-      setIsNewNum(true);
+    setFirstOperand(parseFloat(textCalc));
+    setOp(c);
+    changeUpText(textCalc + ' ' + c + ' ');
+    changeTextCalc('0');
+    setIsNewNum(true);
   };
 
   const handleClearClick = () => {
+    changeTextCalc('0');
+  };
+
+  const handleClearAll = () => {
     changeTextCalc('0');
     setFirstOperand(null);
     changeUpText(null);
@@ -63,6 +65,10 @@ const Index = () => {
           resultValue = firstOperand * secondOperand;
           break;
         case '÷':
+          if (secondOperand === 0) {
+            alert('Cannot divide by zero');
+            return;
+          }
           resultValue = firstOperand / secondOperand;
           break;
         case '%':
@@ -72,8 +78,9 @@ const Index = () => {
           return;
       }
       const historyEntry = `${firstOperand} ${op} ${secondOperand} = ${resultValue}`;
-      setHistory([...history, historyEntry]);
-      localStorage.setItem('calcHistory', JSON.stringify([...history, historyEntry]));
+      const updatedHistory = [historyEntry, ...history];
+      setHistory(updatedHistory);
+      localStorage.setItem('calcHistory', JSON.stringify(updatedHistory));
 
       changeUpText(upText + textCalc);
       changeTextCalc(resultValue.toString());
@@ -85,33 +92,25 @@ const Index = () => {
   };
 
   const historyClick = () => {
-      setShowHistory(!showHistory);
-      document.getElementById('num-div').classList.toggle('blur');
-      document.getElementById('fun-div').classList.toggle('blur');
-      document.getElementById('history').classList.toggle('d-none');
-  }
+    setShowHistory(!showHistory);
+    document.getElementById('num-div').classList.toggle('blur');
+    document.getElementById('fun-div').classList.toggle('blur');
+    document.getElementById('history').classList.toggle('d-none');
+  };
+
   const handleHistoryClick = (entry) => {
     const [operation, result] = entry.split('=').map(item => item.trim());
     changeTextCalc(result);
     setFirstOperand(parseFloat(result));
     setOp(null);
-    setIsNewNum(true);
   };
-  
+
   const themeChange = () => {
     changeBodyTheme(!BodyTheme);
-    if (BodyTheme) {
-      document.body.style.background = 'black';
-      document.body.style.color = 'white';
-      document.getElementById('uptext').style.background = 'black';
-      document.getElementById('history').style.background = 'black';
-      
-    } else {
-      document.body.style.background = 'white';
-      document.body.style.color = 'black';
-      document.getElementById('uptext').style.background = 'white';
-      document.getElementById('history').style.background = 'white';
-    }
+    document.body.style.background = BodyTheme ? 'black' : 'white';
+    document.body.style.color = BodyTheme ? 'white' : 'black';
+    document.getElementById('uptext').style.background = BodyTheme ? 'black' : 'white';
+    document.getElementById('history').style.background = BodyTheme ? 'black' : 'white';
   };
 
   return (
@@ -134,7 +133,7 @@ const Index = () => {
               <input
                 type="text" id="uptext"
                 className={BodyTheme ? 'form-control form-control-sm mb-1 fs-6' : 'form-control form-control-sm mb-1 fs-6 text-white'}
-                style={{ textAlign: 'right' }} value={(upText === null) ? '' : upText} disabled
+                style={{ textAlign: 'right' }} value={upText || ''} disabled
               />
               <input
                 type="text"
@@ -144,17 +143,14 @@ const Index = () => {
             </div>
           </div>
           <div id='history' className="container w-50 p-3 d-none history">
-            <div className='d-flex justify-content-end mx-2'>
-              <button type='button' className='btn btn-danger p-2' onClick={historyClick}><i className="fa-solid fa-xmark"></i></button>
-            </div>
+            <button type='button' id='historyClose' className='btn btn-danger p-2' onClick={historyClick}><i className="fa-solid fa-xmark"></i></button>
             {history.map((entry, index) => (
-              <div className='row'>
+              <div className='row' key={index}>
                 <div className='col-md-12 mt-2'>
                   <button
                     type='button'
-                    key={index}
                     onClick={() => handleHistoryClick(entry)}
-                    className={BodyTheme ? 'btn history-item w-100' : 'btn history-item  w-100 text-white'}
+                    className={BodyTheme ? 'btn history-item w-100' : 'btn history-item w-100 text-white'}
                   >
                     {entry}
                   </button>
@@ -183,15 +179,15 @@ const Index = () => {
               </div>
             </div>
             <div className="col fun-div">
-              <div id='fun-div' className="container p-3">
-                {['÷%C', '×−', '+='].map((row, idx) => (
+              <div id='fun-div' className="container mt-2 p-3">
+                {['÷%C', '×−', '=+'].map((row, idx) => (
                   <div className="row mb-2" key={idx}>
                     {row.split('').map((char, i) => (
                       <div className="col-4 p-1" key={i}>
                         <button
                           type="button"
-                          className={`btn ${char === '=' ? 'btn-success w-100 p-3' : char === 'C' ? 'btn btn-danger w-100 p-3' : BodyTheme ? 'btn btn-light p-3 w-100' : 'btn btn-dark p-3 w-100'}`}
-                          onClick={char === '=' ? handleEqualsClick : char === 'C' ? handleClearClick : () => oprClick(char)}
+                          className={BodyTheme ? 'btn btn-light fs-4 p-2 w-100' : 'btn btn-danger fs-4 p-2 w-100'}
+                          onClick={() => char === 'C' ? handleClearClick() : char === 'Clear' ? handleClearAll() : char === '=' ? handleEqualsClick() : oprClick(char)}
                         >
                           {char}
                         </button>
@@ -199,14 +195,25 @@ const Index = () => {
                     ))}
                   </div>
                 ))}
-                <div className='row mb-2'>
-                  <div className="col-12 p-0">
+                <div className="row mb-2">
+                  <div className="col-12 p-1">
                     <button
                       type="button"
-                      className={BodyTheme ? 'btn btn-link p-3 mt-2 w-100' : 'btn btn-link p-4 w-100'}
+                      className={BodyTheme ? 'btn btn-danger p-3 w-100' : 'btn btn-dark p-3 w-100'}
+                      onClick={handleClearAll}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <div className="row mb-2">
+                  <div className="col-12 p-1">
+                    <button
+                      type="button"
+                      className={BodyTheme ? 'btn btn-info p-3 w-100' : 'btn btn-info p-3 w-100'}
                       onClick={historyClick}
                     >
-                      History
+                      <i className="fa-solid fa-clock-rotate-left"></i> History
                     </button>
                   </div>
                 </div>
